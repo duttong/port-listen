@@ -1,7 +1,10 @@
+import csv
 import sys
+import os
 import socket
 import select
 import threading
+import yaml
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QLabel
 from PyQt5.QtCore import pyqtSignal, QObject
 
@@ -17,6 +20,31 @@ class SignalHandler(QObject):
 
 # Create a global signal handler instance
 signal_handler = SignalHandler()
+
+# Load headers from headers.yaml
+with open("headers.yaml", "r") as file:
+    headers_config = yaml.safe_load(file)
+
+def get_headers(packet_type):
+    """Retrieve headers for the given packet type."""
+    return ["source"] + headers_config["packets"].get(packet_type, {}).get("variables", [])
+
+import yaml
+
+def get_port_variable_mapping(headers_file="headers.yaml"):
+    """Returns a dictionary mapping port numbers to variable lists from headers.yaml."""
+    with open(headers_file, "r") as file:
+        headers_config = yaml.safe_load(file)
+
+    port_variable_map = {}
+    
+    for packet_type, packet_info in headers_config.get("packets", {}).items():
+        port = packet_info.get("port")
+        variables = packet_info.get("variables", [])
+        if port:  # Ensure there's a port defined
+            port_variable_map[port] = variables
+
+    return port_variable_map
 
 class PortWindow(QWidget):
     """ GUI window for each port, staggered so they don't overlap """
@@ -76,9 +104,19 @@ def udp_listener():
                 message = data.decode('utf-8', errors='ignore').strip()
                 print(f"Received from {addr} on port {port}: {message}")
 
-                # Write only the message to the respective file
+                # Check if the file exists to determine if the header should be written
+                file_exists = os.path.exists(filename)
+
                 with open(filename, "a", newline="") as csvfile:
-                    csvfile.write(message + "\n")
+                    writer = csv.writer(csvfile)
+
+                    # Write headers only if the file is new
+                    if not file_exists:
+                        vars = get_port_variable_mapping()[port]
+                        header = ['source'] + vars
+                        writer.writerow(header)
+
+                    writer.writerow(message)  
 
                 # Emit signal to update GUI
                 signal_handler.new_message.emit(port, message)
