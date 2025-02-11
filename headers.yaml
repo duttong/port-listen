@@ -1,0 +1,15 @@
+packets:
+  # Variables MTS packet
+  mts:
+    port: 7075
+    variables: ["datetime", "d1_CO2c_ppm", "d1_N2Oc_ppb", "d2_COc_ppb", "d2_N2Oc_ppb", 
+                "oz_o3best", "w_H2Obest", "oz_p", "d1_T_gas", "d2_T_gas"]
+
+  # Variables engineering data packets
+  data:
+    port: 50555
+    variables: ["datetime", "d1_CO2c_ppm", "d1_N2Oc_ppb", "d2_COc_ppb", "d2_N2Oc_ppb", "d1_P_mbars", 
+                "d1_T_gas", "d1_T_ambient", "d1_T_TEC", "d1_T_TEC_Sink", "d1_Det_PID", "d1_Laser_PID", 
+                "d1_Power_Input_mV", "d1_T_FET", "d2_P_mbars", "d2_T_gas", "d2_T_ambient", 
+                "d2_T_TEC_Sink", "oz_o3", "oz_o3best", "oz_t", "oz_p", "w_H2O_sh", "w_H2O_B", 
+                "w_H2O_lg", "w_H2Obest"]
