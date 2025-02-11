@@ -1,4 +1,3 @@
-import csv
 import sys
 import os
 import socket
@@ -102,21 +101,19 @@ def udp_listener():
                 filename = f"data-{port}.csv"
 
                 message = data.decode('utf-8', errors='ignore').strip()
-                print(f"Received from {addr} on port {port}: {message}")
+                #print(f"Received from {addr} on port {port}: {message}")
 
                 # Check if the file exists to determine if the header should be written
                 file_exists = os.path.exists(filename)
 
                 with open(filename, "a", newline="") as csvfile:
-                    writer = csv.writer(csvfile)
-
-                    # Write headers only if the file is new
                     if not file_exists:
-                        vars = get_port_variable_mapping()[port]
-                        header = ['source'] + vars
-                        writer.writerow(header)
+                        # Convert list to a comma-separated string
+                        vars_list = get_port_variable_mapping()[port]
+                        header = "source," + ",".join(vars_list)  
+                        csvfile.write(header + "\n")  # Write without csv.writer
 
-                    writer.writerow(message)  
+                    csvfile.write(message + "\n")  # Write message directly
 
                 # Emit signal to update GUI
                 signal_handler.new_message.emit(port, message)
