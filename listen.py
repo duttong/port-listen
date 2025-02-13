@@ -7,9 +7,6 @@ import yaml
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QLabel
 from PyQt5.QtCore import pyqtSignal, QObject
 
-# Define the ports to listen on
-PORTS = [7075, 50555]
-
 # Dictionary to hold GUI windows for each port
 windows = {}
 
@@ -27,8 +24,6 @@ with open("headers.yaml", "r") as file:
 def get_headers(packet_type):
     """Retrieve headers for the given packet type."""
     return ["source"] + headers_config["packets"].get(packet_type, {}).get("variables", [])
-
-import yaml
 
 def get_port_variable_mapping(headers_file="headers.yaml"):
     """Returns a dictionary mapping port numbers to variable lists from headers.yaml."""
@@ -84,12 +79,13 @@ class PortWindow(QWidget):
 def udp_listener():
     sockets = []
 
-    for port in PORTS:
+    ports = get_port_variable_mapping().keys()
+    for port in ports:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(("0.0.0.0", port))  # Listen on all available network interfaces
         sockets.append(sock)
 
-    print(f"Listening for UDP data on ports {PORTS}...")
+    print(f"Listening for UDP data on ports {ports}...")
 
     try:
         while True:
@@ -130,7 +126,7 @@ def main():
     app = QApplication(sys.argv)
 
     # Create windows for each port
-    for port in PORTS:
+    for port in get_port_variable_mapping().keys():
         windows[port] = PortWindow(port)
         windows[port].show()
 

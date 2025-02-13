@@ -2,14 +2,28 @@ packets:
   # Variables MTS packet
   mts:
     port: 7075
+    listen: false
     variables: ["datetime", "d1_CO2c_ppm", "d1_N2Oc_ppb", "d2_COc_ppb", "d2_N2Oc_ppb", 
                 "oz_o3best", "w_H2Obest", "oz_p", "d1_T_gas", "d2_T_gas"]
 
   # Variables engineering data packets
-  data:
+  data-ucatsb:
     port: 50555
+    listen: true
     variables: ["datetime", "d1_CO2c_ppm", "d1_N2Oc_ppb", "d2_COc_ppb", "d2_N2Oc_ppb", "d1_P_mbars", 
                 "d1_T_gas", "d1_T_ambient", "d1_T_TEC", "d1_T_TEC_Sink", "d1_Det_PID", "d1_Laser_PID", 
                 "d1_Power_Input_mV", "d1_T_FET", "d2_P_mbars", "d2_T_gas", "d2_T_ambient", 
                 "d2_T_TEC_Sink", "oz_o3", "oz_o3best", "oz_t", "oz_p", "w_H2O_sh", "w_H2O_B", 
                 "w_H2O_lg", "w_H2Obest"]
+
+  # Variables UCATS engineering data packets
+  data-ucats:
+    port: 7093
+    listen: true
+    variables: ["datetime", "flow_M1", "flow_BF1", "pres_BP1", "pres_ECD1", "temp_SL1", 
+                "flow_M2", "flow_BF2", "pres_BP2", "pres_ECD2", "temp_SL2", "flow_M3", 
+                "flow_BF3", "pres_BP3", "pres_ECD3", "temp_SL3", "pres_extern", 
+                "presL_dope", "presL_cal", "presL_N2", "presH_123", "pres_PUMP", "pres_SL", "flow_SL", 
+                "temp_gasB_N", "temp_gasB_C", "temp_pump", "temp_amb", "ecdA_CH1", "ecdA_CH2", 
+                "ecdA_CH3", "volt_5", "volt_15", "volt_28", "CH3_ECD", "CH3_Col", "CH3_Post", 
+                "CH1_ECD", "CH1_Col", "CH2_ECD", "CH2_Col", "GCstate", "ssv", "F11", "F12"]
