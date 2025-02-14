@@ -1,144 +1,126 @@
+import socket
+import yaml
 import sys
 import os
-import socket
-import select
-import threading
-import yaml
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QLabel
-from PyQt5.QtCore import pyqtSignal, QObject
+import csv
+from datetime import datetime
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit
+from PyQt5.QtCore import QThread, pyqtSignal
 
-# Dictionary to hold GUI windows for each port
-windows = {}
+class PacketListener(QThread):
+    packet_received = pyqtSignal(str)
 
-# Thread-safe signal handler
-class SignalHandler(QObject):
-    new_message = pyqtSignal(int, str)  # Signal: (port, message)
-
-# Create a global signal handler instance
-signal_handler = SignalHandler()
-
-# Load headers from headers.yaml
-with open("headers.yaml", "r") as file:
-    headers_config = yaml.safe_load(file)
-
-def get_headers(packet_type):
-    """Retrieve headers for the given packet type."""
-    return ["source"] + headers_config["packets"].get(packet_type, {}).get("variables", [])
-
-def get_port_variable_mapping(headers_file="headers.yaml"):
-    """Returns a dictionary mapping port numbers to variable lists from headers.yaml."""
-    with open(headers_file, "r") as file:
-        headers_config = yaml.safe_load(file)
-
-    port_variable_map = {}
-    
-    for packet_type, packet_info in headers_config.get("packets", {}).items():
-        port = packet_info.get("port")
-        variables = packet_info.get("variables", [])
-        if port:  # Ensure there's a port defined
-            port_variable_map[port] = variables
-
-    return port_variable_map
-
-class PortWindow(QWidget):
-    """ GUI window for each port, staggered so they don't overlap """
-    window_offset = 0  # Class-level variable to track window position
-
-    def __init__(self, port):
+    def __init__(self, config_file):
         super().__init__()
-        self.port = port
-        self.init_ui()
+        self.config_file = config_file
+        self.packets = self.load_config()
+        self.sockets = {}
+        self.running = False
 
-    def init_ui(self):
-        self.setWindowTitle(f"Port {self.port}")
+    def load_config(self):
+        """Loads the packet configuration from the YAML file."""
+        with open(self.config_file, 'r') as file:
+            return yaml.safe_load(file)['packets']
 
-        # Set the window position dynamically to stagger windows
-        x_offset = 100 + PortWindow.window_offset * 50
-        y_offset = 100 + PortWindow.window_offset * 50
-        self.setGeometry(x_offset, y_offset, 500, 400)
-        PortWindow.window_offset += 1  # Increment for the next window
+    def setup_sockets(self):
+        """Initializes sockets based on the configuration."""
+        for packet_name, packet_info in self.packets.items():
+
+            if packet_info['listen']:
+                port = packet_info['port']
+                self.sockets[packet_name] = self.create_socket(port)
+                self.setup_csv(packet_info['port'], packet_info['variables'])
+                print(f"Listening on port {port} for {packet_name}...")
+
+    def create_socket(self, port):
+        """Creates and binds a socket to the given port."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(("", port))
+        sock.settimeout(1.0)  # Set timeout to allow graceful shutdown
+        return sock
+
+    def setup_csv(self, port, variables):
+        """Sets up CSV files and writes headers if the file does not exist."""
+        filename = f"data-{port}.csv"
+        file_exists = os.path.isfile(filename)
+
+        with open(filename, 'a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                writer.writerow(variables)  # Write headers if file is new
+
+    def save_to_csv(self, port, data):
+        """Appends received packet data to the appropriate CSV file."""
+        filename = f"data-{port}.csv"
+        with open(filename, 'a', newline='') as file:
+            writer = csv.writer(file)
+            if port == 7093:
+                # Extract datetime                print(data)
+                parts = data[1:]
+                datetime = data[0].replace("#UCeng#", "")
+
+                # Extract values, keeping 'nan' and stripping variable names
+                values = [item.split('=')[1] if '=' in item else item for item in parts]
+
+                # Write cleaned line to new CSV
+                writer.writerow([datetime] + list(values))
+            else:
+                
+                writer.writerow(data)
+
+    def run(self):
+        """Listens for incoming packets on configured ports."""
+        self.setup_sockets()
+        self.running = True
+        print("Listening for packets...")
+        while self.running:
+            for packet_name, sock in self.sockets.items():
+
+                try:
+                    data, addr = sock.recvfrom(1024)
+                    message = f"Received packet: {packet_name} from {addr}\nData: {data.decode()}\n"
+                    self.packet_received.emit(message)
+
+                    # Save data to CSV
+                    port = self.packets[packet_name]['port']
+                    parsed_data = data.decode().strip().split(",")  # Adjust parsing as needed
+                    self.save_to_csv(port, parsed_data)
+
+                except socket.timeout:
+                    continue  # Allows checking self.running to exit loop cleanly
+
+    def stop(self):
+        """Stops listening for packets."""
+        self.running = False
+        self.wait()
+        print("Stopped listening.")
+
+class PacketListenerGUI(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.listener = PacketListener("headers.yaml")
+        self.listener.packet_received.connect(self.display_packet)
+        self.listener.start()
+
+    def initUI(self):
+        """Initializes the GUI components."""
+        self.setWindowTitle("Packet Listener")
+        self.setGeometry(100, 100, 600, 400)
 
         layout = QVBoxLayout()
-
-        # Label for the port number
-        self.label = QLabel(f"Listening on Port {self.port}", self)
-        layout.addWidget(self.label)
-
-        # Text area to display messages
-        self.text_edit = QTextEdit(self)
-        self.text_edit.setReadOnly(True)
-        layout.addWidget(self.text_edit)
+        self.text_display = QTextEdit()
+        self.text_display.setReadOnly(True)
+        layout.addWidget(self.text_display)
 
         self.setLayout(layout)
 
-    def update_messages(self, message):
-        """Updates the text area with the latest message"""
-        self.text_edit.append(message)  # Append new message
-
-# Function to handle UDP listening
-def udp_listener():
-    sockets = []
-
-    ports = get_port_variable_mapping().keys()
-    for port in ports:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(("0.0.0.0", port))  # Listen on all available network interfaces
-        sockets.append(sock)
-
-    print(f"Listening for UDP data on ports {ports}...")
-
-    try:
-        while True:
-            readable, _, _ = select.select(sockets, [], [])
-
-            for sock in readable:
-                data, addr = sock.recvfrom(1024)  # Receive up to 1024 bytes
-                port = sock.getsockname()[1]
-                filename = f"data-{port}.csv"
-
-                message = data.decode('utf-8', errors='ignore').strip()
-                #print(f"Received from {addr} on port {port}: {message}")
-
-                # Check if the file exists to determine if the header should be written
-                file_exists = os.path.exists(filename)
-
-                with open(filename, "a", newline="") as csvfile:
-                    if not file_exists:
-                        # Convert list to a comma-separated string
-                        vars_list = get_port_variable_mapping()[port]
-                        header = "source," + ",".join(vars_list)  
-                        csvfile.write(header + "\n")  # Write without csv.writer
-
-                    csvfile.write(message + "\n")  # Write message directly
-
-                # Emit signal to update GUI
-                signal_handler.new_message.emit(port, message)
-
-    except KeyboardInterrupt:
-        print("\nStopping UDP listener.")
-    finally:
-        # Close sockets
-        for sock in sockets:
-            sock.close()
-
-def main():
-    # Start PyQt5 application in the main thread
-    app = QApplication(sys.argv)
-
-    # Create windows for each port
-    for port in get_port_variable_mapping().keys():
-        windows[port] = PortWindow(port)
-        windows[port].show()
-
-    # Connect signal to window updates
-    signal_handler.new_message.connect(lambda port, msg: windows[port].update_messages(msg))
-
-    # Start UDP listener in a separate thread
-    udp_thread = threading.Thread(target=udp_listener, daemon=True)
-    udp_thread.start()
-
-    # Start GUI event loop
-    sys.exit(app.exec_())
+    def display_packet(self, message):
+        """Displays received packets in the text area."""
+        self.text_display.append(message)
 
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    gui = PacketListenerGUI()
+    gui.show()
+    sys.exit(app.exec_())

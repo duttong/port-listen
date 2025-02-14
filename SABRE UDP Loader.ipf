@@ -7,16 +7,16 @@ Menu "Macros"
 	"Start automatic loading every 30 seconds", StartLoadTask()
 	"Stop automatic loading", StopLoadTask()
 	"-"
-	//"ECDs"
-	//"Omegas"
-	//"Pressures"
-	//"Flows"
-	//"Temperatures"
-	//"Voltage", Volts()
-	//"Mole_Fractions"
-	//"-"
-	//"Plot everythng", ECDs(); Omegas(); Pressures(); Flows(); Temperatures(); Volts(); Mole_Fractions()
-	//"-"
+	"ECDs"
+	"Omegas"
+	"Pressures"
+	"Flows"
+	"Temperatures"
+	"Voltage", Volts()
+	"Mole_Fractions"
+	"-"
+	"Plot everythng", ECDs(); Omegas(); Pressures(); Flows(); Temperatures(); Volts(); Mole_Fractions()
+	"-"
 	"Tile all graphs", TileWindows/O=1/C/P
 	"Close all graphs", rmDisplayedGraphs()
 End
@@ -98,7 +98,7 @@ Function Load_UCATS_CSV()
 	LoadUCBData(DataPacketFile)
 	//LoadWave/Q/O/A/J/D/W/K=0/R={English,2,2,2,2,"Year-Month-DayOfMonth",40}/P=DataPath DataPacketFile
 	//wave Xwave
-	//Duplicate /o Xwave, DataXwave
+	//Duplicate /o Xwave, datetimewv
 	
 	//LoadWave/Q/O/A/J/D/W/K=0/R={English,2,2,2,2,"Year-Month-DayOfMonth",40}/P=DataPath MTSFile
 	//Duplicate /o Xwave, MTSxwave
@@ -154,9 +154,9 @@ End
 
 Window ECD_temps() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(32,86,739,518) CH2_ECD vs DataXwave
-	AppendToGraph CH1_ECD vs DataXwave
-	AppendToGraph CH3_ECD vs DataXwave
+	Display /W=(32,86,739,518) CH2_ECD vs datetimewv
+	AppendToGraph CH1_ECD vs datetimewv
+	AppendToGraph CH3_ECD vs datetimewv
 	ModifyGraph rgb(CH2_ECD)=(19675,39321,1),rgb(CH3_ECD)=(26411,1,52428)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -170,10 +170,10 @@ EndMacro
 
 Window Column_temps() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(74,129,781,561) CH1_Col vs DataXwave
-	AppendToGraph CH2_Col vs DataXwave
-	AppendToGraph CH3_Col vs DataXwave
-	AppendToGraph/R CH3_Post vs DataXwave
+	Display /W=(74,129,781,561) CH1_Col vs datetimewv
+	AppendToGraph CH2_Col vs datetimewv
+	AppendToGraph CH3_Col vs datetimewv
+	AppendToGraph/R CH3_Post vs datetimewv
 	ModifyGraph lSize(CH3_Post)=2
 	ModifyGraph rgb(CH2_Col)=(19675,39321,1),rgb(CH3_Col)=(26411,1,52428),rgb(CH3_Post)=(52428,34958,1)
 	ModifyGraph gaps=0
@@ -208,7 +208,7 @@ End
 
 Window ch1_resp() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(35,66,675,310) ecdA_CH1 vs DataXwave
+	Display /W=(35,66,675,310) ecdA_CH1 vs datetimewv
 	ModifyGraph gaps=0
 	ModifyGraph dateInfo(bottom)={0,0,0}
 	ModifyGraph grid=1,mirror=2
@@ -218,7 +218,7 @@ EndMacro
 
 Window ch2_resp() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(68,119,704,362) ecdA_CH2 vs DataXwave
+	Display /W=(68,119,704,362) ecdA_CH2 vs datetimewv
 	ModifyGraph gaps=0
 	ModifyGraph dateInfo(bottom)={0,0,0}
 	ModifyGraph grid=1,mirror=2
@@ -228,7 +228,7 @@ EndMacro
 
 Window ch3_resp() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(103,161,739,402) ecdA_CH3 vs DataXwave
+	Display /W=(103,161,739,402) ecdA_CH3 vs datetimewv
 	ModifyGraph gaps=0
 	ModifyGraph dateInfo(bottom)={0,0,0}
 	ModifyGraph grid=1,mirror=2
@@ -238,7 +238,7 @@ EndMacro
 
 Window Chan1_flows() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(829,70,1224,278) flow_M1,flow_BF1 vs DataXwave
+	Display /W=(829,70,1224,278) flow_M1,flow_BF1 vs datetimewv
 	ModifyGraph rgb(flow_M1)=(1,16019,65535)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -251,7 +251,7 @@ EndMacro
 
 Window Chan2_flows() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(860,95,1255,303) flow_M2,flow_BF2 vs DataXwave
+	Display /W=(860,95,1255,303) flow_M2,flow_BF2 vs datetimewv
 	ModifyGraph rgb(flow_M2)=(1,16019,65535)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -264,7 +264,7 @@ EndMacro
 
 Window Chan3_flows() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(893,123,1288,331) flow_M3,flow_BF3 vs DataXwave
+	Display /W=(893,123,1288,331) flow_M3,flow_BF3 vs datetimewv
 	ModifyGraph rgb(flow_M3)=(1,16019,65535)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -288,7 +288,7 @@ End
 
 Window High_Pressures() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(35,66,430,274) presH_123 vs DataXwave
+	Display /W=(35,66,430,274) presH_123 vs datetimewv
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
 	ModifyGraph mirror=2
@@ -300,7 +300,7 @@ EndMacro
 
 Window Low_Pressures() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(72,105,467,313) presL_cal,presL_dope,presL_N2 vs DataXwave
+	Display /W=(72,105,467,313) presL_cal,presL_dope,presL_N2 vs datetimewv
 	ModifyGraph rgb(presL_dope)=(19675,39321,1),rgb(presL_N2)=(1,16019,65535)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -343,7 +343,7 @@ end
 
 Window ECD_Pressure() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(102,434,740,720) pres_ECD1,pres_ECD2,pres_ECD3 vs DataXwave
+	Display /W=(102,434,740,720) pres_ECD1,pres_ECD2,pres_ECD3 vs DateTimeWv
 	ModifyGraph rgb(pres_ECD2)=(19675,39321,1),rgb(pres_ECD3)=(26411,1,52428)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -356,7 +356,7 @@ EndMacro
 
 Window BackPress() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(463,454,858,662) pres_BP1,pres_BP2,pres_BP3 vs DataXwave
+	Display /W=(463,454,858,662) pres_BP1,pres_BP2,pres_BP3 vs datetimewv
 	ModifyGraph rgb(pres_BP2)=(19675,39321,1),rgb(pres_BP3)=(26411,1,52428)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -369,7 +369,7 @@ EndMacro
 
 Window Press_pump_etc() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(468,213,863,421) pres_extern,pres_PUMP,pres_SL vs DataXwave
+	Display /W=(468,213,863,421) pres_extern,pres_PUMP,pres_SL vs datetimewv
 	ModifyGraph rgb(pres_PUMP)=(19675,39321,1),rgb(pres_SL)=(26411,1,52428)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -382,7 +382,7 @@ EndMacro
 
 Window Temps() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(706,66,1101,274) temp_amb,temp_gasB_C,temp_gasB_N,temp_pump vs DataXwave
+	Display /W=(706,66,1101,274) temp_amb,temp_gasB_C,temp_gasB_N,temp_pump vs datetimewv
 	ModifyGraph rgb(temp_gasB_C)=(1,16019,65535),rgb(temp_gasB_N)=(19675,39321,1),rgb(temp_pump)=(44253,29492,58982)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -395,7 +395,7 @@ EndMacro
 
 Window Sample_Loop_Temps() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(753,111,1148,319) temp_SL1,temp_SL2,temp_SL3 vs DataXwave
+	Display /W=(753,111,1148,319) temp_SL1,temp_SL2,temp_SL3 vs datetimewv
 	ModifyGraph rgb(temp_SL2)=(19675,39321,1),rgb(temp_SL3)=(26411,1,52428)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -415,7 +415,7 @@ End
 
 Window Volts() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(937,74,1332,282) volt_5,volt_15,volt_28 vs DataXwave
+	Display /W=(937,74,1332,282) volt_5,volt_15,volt_28 vs datetimewv
 	ModifyGraph rgb(volt_15)=(19675,39321,1),rgb(volt_28)=(26411,1,52428)
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
@@ -428,7 +428,7 @@ EndMacro
 
 Window Sample_Loop_Flow() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(932,158,1327,366) flow_SL vs DataXwave
+	Display /W=(932,158,1327,366) flow_SL vs datetimewv
 	ModifyGraph gaps=0
 	ModifyGraph grid=1
 	ModifyGraph mirror=2
@@ -439,7 +439,7 @@ EndMacro
 
 Window Mole_Fractions() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(35,66,779,491) CFC11 vs MTSxwave
+	Display /W=(35,66,779,491) F11 vs MTSxwave
 	AppendToGraph N2O vs MTSxwave
 	AppendToGraph CFC12 vs MTSxwave
 	AppendToGraph/R CH4 vs MTSxwave
