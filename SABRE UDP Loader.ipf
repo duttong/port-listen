@@ -439,20 +439,28 @@ EndMacro
 
 Window Mole_Fractions() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(35,66,779,491) F11 vs MTSxwave
-	AppendToGraph N2O vs MTSxwave
-	AppendToGraph CFC12 vs MTSxwave
-	AppendToGraph/R CH4 vs MTSxwave
-	AppendToGraph/R SF6 vs MTSxwave
+	Display /W=(35,66,779,491) F11 vs datetimewv
+	AppendToGraph N2O vs datetimewv
+	AppendToGraph F12 vs datetimewv
+	AppendToGraph/R CH4 vs datetimewv
+	AppendToGraph/R=newaxis SF6 vs datetimewv
+	AppendToGraph/R SF6 vs datetimewv
 	ModifyGraph lSize=3
-	ModifyGraph rgb(N2O)=(0,0,65535),rgb(CFC12)=(3,52428,1),rgb(CH4)=(0,0,0),rgb(SF6)=(44253,29492,58982)
-	ModifyGraph muloffset(CH4)={0,0.001}
+	ModifyGraph rgb(N2O)=(0,0,65535),rgb(F12)=(3,52428,1),rgb(CH4)=(0,0,0),rgb(SF6)=(44253,29492,58982)
 	ModifyGraph lblPos(right)=55
 	ModifyGraph dateInfo(bottom)={0,0,0}
 	Label left "CFC11,  CFC12,  N2O"
+	ModifyGraph lblMargin(left)=15
 	Label bottom "Day"
-	Label right "CH4,  SF6"
-	Legend/C/N=text0/J/X=4.55/Y=9.22 "\\s(CFC11) CFC11\r\\s(N2O) N2O\r\\s(CFC12) CFC12\r\\s(CH4) CH4\r\\s(SF6) SF6"
+	Label right "CH4"
+	Label newaxis "SF6"
+	ModifyGraph lblPos(newaxis)=50
+	SetAxis left 100,*
+	SetAxis newaxis 10,*
+	SetAxis right 1600,*
+	ModifyGraph standoff=0
+	ModifyGraph mirror(bottom)=1
+	Legend/C/N=text0/J/X=4.55/Y=9.22 "\\s(F11) CFC11\r\\s(N2O) N2O\r\\s(F12) CFC12\r\\s(CH4) CH4\r\\s(SF6) SF6"
 EndMacro
 
 Function ClearAllWaves()
